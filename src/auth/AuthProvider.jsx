@@ -1,61 +1,43 @@
-import { useEffect, useState } from "react";
-import { AuthContext } from "./AuthContext";
-import { api } from "../api/api";
+import { createContext, useState, useEffect } from "react";
+import { api } from "../api/axios";
+
+export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [usuario, setUsuario] = useState(null);
-  const [cargando, setCargando] = useState(true);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  // persistencia de sesión
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      setCargando(false);
-      return;
-    }
+    if (!token) return setLoading(false);
 
-    const cargarPerfil = async () => {
-      try {
-        const { data } = await api.get("/usuarios/me");
-        setUsuario(data.datos);
-      } catch {
-        localStorage.removeItem("token");
-        setUsuario(null);
-      } finally {
-        setCargando(false);
-      }
-    };
-
-    cargarPerfil();
+    api
+      .get("/auth/me")
+      .then((res) => setUser(res.data.data))
+      .finally(() => setLoading(false));
   }, []);
 
-  const login = async (correo, contrasena) => {
-    const { data } = await api.post("/autenticacion/login", {
-      correo,
-      contrasena,
-    });
+  const login = async (email, password) => {
+    const res = await api.post("/auth/login", { email, password });
+    localStorage.setItem("token", res.data.data.token);
+    setUser(res.data.data.user);
+  };
 
-    const token = data.datos.token;
-    const usuarioLogeado = data.datos.usuario;
-
-    localStorage.setItem("token", token);
-    setUsuario(usuarioLogeado);
+  const register = async (values) => {
+    const res = await api.post("/auth/register", values);
+    localStorage.setItem("token", res.data.data.token);
+    setUser(res.data.data.user);
   };
 
   const logout = () => {
     localStorage.removeItem("token");
-    setUsuario(null);
+    setUser(null);
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        usuario,
-        cargando,
-        login,
-        logout,
-      }}
-    >
-      {!cargando && children}
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+      {children}
     </AuthContext.Provider>
   );
 };

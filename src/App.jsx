@@ -1,115 +1,71 @@
-import { Routes, Route } from "react-router-dom";
-import { useContext } from "react";
-import { AuthContext } from "./auth/AuthContext";
-
-// Public
-import { LoginPage } from "./pages/LoginPage";
-
-// Perfil
-import { PerfilPage } from "./pages/perfil/PerfilPage";
-import { CambiarContrasenaPage } from "./pages/perfil/CambiarContrasenaPage";
-
-// Admin
-import { DashboardAdmin } from "./pages/admin/DashboardAdmin";
-import { UsuariosPage } from "./pages/admin/UsuariosPage";
-import { CursosAdminPage } from "./pages/admin/CursosAdminPage";
-
-// Docente
-import { DashboardDocente } from "./pages/docente/DashboardDocente";
-import { DocenteCursosPage } from "./pages/docente/DocenteCursosPage";
-import { DocenteSolicitudesPage } from "./pages/docente/DocenteSolicitudesPage";
-// Estudiante
-import { DashboardEstudiante } from "./pages/estudiante/DashboardEstudiante";
-import { EstudianteCursosPage } from "./pages/estudiante/EstudianteCursosPage";
-
-// Components
-import { Sidebar } from "./components/Sidebar";
-import { PrivateRoute } from "./auth/PrivateRoute";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import StudentDashboard from "./pages/student/StudentDashboard";
+import StudentCourseDetail from "./pages/student/StudentCourseDetail";
+import TeacherDashboard from "./pages/teacher/TeacherDashboard";
+import TeacherCourseDetail from "./pages/teacher/TeacherCourseDetail";
+import AdminUsers from "./pages/admin/AdminUsers";
+import CoursePublicDetail from "./pages/CoursePublicDetail";
+import { PrivateRoute } from "./router";
 
 export default function App() {
-  const { usuario } = useContext(AuthContext);
-
   return (
-    <>
-      {usuario && <Sidebar />}
-
+    <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<LoginPage />} />
+        {/* Público */}
+        <Route path="/" element={<Home />} />
+        <Route path="/courses/:id" element={<CoursePublicDetail />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
+        {/* Estudiante */}
         <Route
-          path="/"
+          path="/student"
           element={
-            <PrivateRoute>
-              {usuario?.rol === "ADMIN" && <DashboardAdmin />}
-              {usuario?.rol === "DOCENTE" && <DashboardDocente />}
-              {usuario?.rol === "ESTUDIANTE" && <DashboardEstudiante />}
+            <PrivateRoute roles={["STUDENT"]}>
+              <StudentDashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/student/courses/:id"
+          element={
+            <PrivateRoute roles={["STUDENT"]}>
+              <StudentCourseDetail />
             </PrivateRoute>
           }
         />
 
-        {/* Perfil */}
+        {/* Docente */}
         <Route
-          path="/perfil"
+          path="/teacher"
           element={
-            <PrivateRoute>
-              <PerfilPage />
+            <PrivateRoute roles={["TEACHER"]}>
+              <TeacherDashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/teacher/courses/:id"
+          element={
+            <PrivateRoute roles={["TEACHER"]}>
+              <TeacherCourseDetail />
             </PrivateRoute>
           }
         />
 
+        {/* Admin */}
         <Route
-          path="/perfil/cambiar-contrasena"
+          path="/admin/users"
           element={
-            <PrivateRoute>
-              <CambiarContrasenaPage />
-            </PrivateRoute>
-          }
-        />
-
-        {/* Rutas Admin */}
-        <Route
-          path="/admin/usuarios"
-          element={
-            <PrivateRoute>
-              <UsuariosPage />
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/admin/cursos"
-          element={
-            <PrivateRoute>
-              <CursosAdminPage />
-            </PrivateRoute>
-          }
-        />
-
-        {/* Rutas Docente */}
-        <Route
-          path="/docente/cursos"
-          element={
-            <PrivateRoute>
-              <DocenteCursosPage />
-            </PrivateRoute>
-          }
-        />
-        <Route path="/docente/cursos" element={<DocenteCursosPage />} />
-        <Route
-          path="/docente/solicitudes"
-          element={<DocenteSolicitudesPage />}
-        />
-
-        {/* Rutas Estudiante */}
-        <Route
-          path="/estudiante/cursos"
-          element={
-            <PrivateRoute>
-              <EstudianteCursosPage />
+            <PrivateRoute roles={["ADMIN"]}>
+              <AdminUsers />
             </PrivateRoute>
           }
         />
       </Routes>
-    </>
+    </BrowserRouter>
   );
 }
