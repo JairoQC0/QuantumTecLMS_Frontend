@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  font-family: "Figtree", sans-serif;
+}
+
+.input-dark {
+  @apply bg-[#1b1c1f] border border-slate-700 text-white px-4 py-2 rounded-lg focus:ring-primary focus:ring-2;
+}
